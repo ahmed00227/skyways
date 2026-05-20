@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkyWays Travel — Your Next Journey Begins Now</title>
+<meta name="description" content="Premium flight booking service. Call us 24/7 for exclusive deals.">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;600;700;900&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/SplitText.min.js"></script>
+
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<!-- Lenis Smooth Scroll -->
+<script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+<style>
+  :root {
+    --bg: #080910;
+    --bg2: #0d0f18;
+    --cyan: #00E5FF;
+    --magenta: #FF007F;
+    --orange: #FF9900;
+    --gold: #FFD700;
+    --white: #F0F4FF;
+    --muted: #6B7A9A;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: auto; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ── CUSTOM CURSOR ── */
+  #cursor {
+    width: 12px; height: 12px;
+    background: var(--cyan);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%,-50%);
+    mix-blend-mode: difference;
+    transition: width .3s, height .3s, background .3s;
+    will-change: transform;
+  }
+  #cursor-ring {
+    width: 40px; height: 40px;
+    border: 1.5px solid rgba(0,229,255,0.5);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%,-50%);
+    transition: width .4s, height .4s, border-color .4s;
+    will-change: transform;
+  }
+  body.hovering #cursor { width: 20px; height: 20px; background: var(--magenta); }
+  body.hovering #cursor-ring { width: 60px; height: 60px; border-color: var(--magenta); }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    padding: 1.5rem 3rem;
+    display: flex; justify-content: space-between; align-items: center;
+    backdrop-filter: blur(0px);
+    transition: backdrop-filter .4s, background .4s;
+  }
+  nav.scrolled {
+    backdrop-filter: blur(20px);
+    background: rgba(8,9,16,0.7);
+    border-bottom: 1px solid rgba(0,229,255,0.1);
+  }
+  .logo {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900;
+    font-size: 1.4rem;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--cyan), var(--magenta));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .nav-cta {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--cyan);
+    padding: 0.6rem 1.5rem;
+    border-radius: 100px;
+    text-decoration: none;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .nav-cta:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--cyan); }
+
+  /* ── HERO ── */
+  #hero {
+    position: relative;
+    width: 100%; height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    overflow: hidden;
+    text-align: center;
+  }
+  #hero-video-wrap {
+    position: absolute; inset: 0;
+    z-index: 0;
+  }
+  #hero-video-wrap::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(8,9,16,0.4) 0%,
+      rgba(8,9,16,0.2) 40%,
+      rgba(8,9,16,0.7) 80%,
+      rgba(8,9,16,1) 100%
+    );
+    z-index: 1;
+  }
+  /* Animated gradient fallback if no video */
+  #hero-canvas-bg {
+    position: absolute; inset: 0; z-index: 0;
+  }
+  .hero-content {
+    position: relative; z-index: 10;
+    max-width: 1100px; padding: 0 2rem;
+  }
+  .hero-tag {
+    display: inline-block;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    border: 1px solid rgba(0,229,255,0.3);
+    padding: 0.4rem 1.2rem;
+    border-radius: 100px;
+    margin-bottom: 2rem;
+    opacity: 0;
+  }
+  .hero-headline {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.8rem, 7vw, 6.5rem);
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+  }
+  .hero-headline span.grad {
+    background: linear-gradient(135deg, var(--cyan) 0%, var(--magenta) 50%, var(--orange) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .rotating-text-wrap {
+    height: 2.5rem; overflow: hidden;
+    margin-bottom: 3rem; opacity: 0;
+  }
+  .rotating-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: rgba(240,244,255,0.7);
+    transition: transform 0.6s cubic-bezier(0.76,0,0.24,1);
+  }
+
+  /* Phone CTA Button */
+  .phone-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    color: var(--bg);
+    background: linear-gradient(135deg, var(--cyan), #0099cc);
+    padding: 1.2rem 2.5rem;
+    border-radius: 100px;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    will-change: transform;
+    transition: transform .2s;
+  }
+  .phone-cta::before {
+    content: '';
+    position: absolute; inset: -3px;
+    background: linear-gradient(135deg, var(--cyan), var(--magenta), var(--orange), var(--cyan));
+    background-size: 300%;
+    border-radius: 100px;
+    z-index: -1;
+    animation: borderGlow 3s linear infinite;
+    filter: blur(6px);
+  }
+  @keyframes borderGlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .phone-cta:hover { transform: scale(1.04); }
+  .pulse-ring {
+    display: inline-flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .pulse-ring::before, .pulse-ring::after {
+    content: '';
+    position: absolute;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(0,229,255,0.3);
+    animation: pulseRing 2s ease-out infinite;
+  }
+  .pulse-ring::after { animation-delay: 1s; }
+  @keyframes pulseRing {
+    0% { transform: scale(0.8); opacity: 1; }
+    100% { transform: scale(2.5); opacity: 0; }
+  }
+  .phone-icon {
+    width: 32px; height: 32px;
+    background: rgba(8,9,16,0.2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+  }
+
+  .scroll-hint {
+    position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    opacity: 0; z-index: 10;
+  }
+  .scroll-hint span {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.7rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .scroll-line {
+    width: 1px; height: 50px;
+    background: linear-gradient(to bottom, var(--cyan), transparent);
+    animation: scrollLine 2s ease-in-out infinite;
+  }
+  @keyframes scrollLine {
+    0%, 100% { opacity: 0; transform: scaleY(0); transform-origin: top; }
+    50% { opacity: 1; transform: scaleY(1); }
+  }
+
+  /* ── SECTION COMMONS ── */
+  section { padding: 8rem 3rem; position: relative; }
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 1.2rem;
+    display: block;
+  }
+  .section-title {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2rem, 4.5vw, 4rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── BENEFITS / BENTO ── */
+  #benefits { background: var(--bg2); }
+  .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.5rem;
+    max-width: 1400px; margin: 0 auto;
+  }
+  .bento-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 24px;
+    padding: 2.5rem;
+    position: relative; overflow: hidden;
+    will-change: transform, opacity;
+    transition: border-color .3s, background .3s;
+  }
+  .bento-card:hover {
+    border-color: rgba(0,229,255,0.3);
+    background: rgba(0,229,255,0.03);
+  }
+  .bento-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0;
+    transition: opacity .4s;
+  }
+  .bento-card:hover::before { opacity: 1; }
+  .bento-card.wide { grid-column: span 7; }
+  .bento-card.tall { grid-column: span 5; min-height: 320px; }
+  .bento-card.half { grid-column: span 4; }
+  .bento-card.third { grid-column: span 8; }
+  .bento-icon {
+    font-size: 2.5rem; margin-bottom: 1.5rem; display: block;
+    filter: drop-shadow(0 0 12px var(--cyan));
+  }
+  .bento-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 1.3rem;
+    margin-bottom: 0.8rem;
+  }
+  .bento-card p {
+    color: var(--muted); line-height: 1.7; font-size: 0.95rem;
+  }
+  .bento-number {
+    position: absolute; bottom: 2rem; right: 2rem;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 5rem; font-weight: 900;
+    color: rgba(255,255,255,0.04);
+    line-height: 1; pointer-events: none;
+  }
+  .bento-accent {
+    position: absolute; bottom: 0; right: 0;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ── DESTINATIONS HORIZONTAL SCROLL ── */
+  #destinations {
+    padding: 8rem 0;
+    overflow: hidden;
+  }
+  .destinations-header {
+    padding: 0 3rem;
+    margin-bottom: 3rem;
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+  .scroll-hint-horiz {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--muted);
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .horiz-scroll-track {
+    display: flex; gap: 1.5rem;
+    padding: 1rem 3rem 3rem;
+    cursor: grab;
+    user-select: none;
+    width: max-content;
+    will-change: transform;
+  }
+  .horiz-scroll-track:active { cursor: grabbing; }
+  .dest-card {
+    width: 320px; height: 440px;
+    border-radius: 24px;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+    transition: width .4s cubic-bezier(0.76,0,0.24,1);
+    will-change: width;
+  }
+  .dest-card:hover { width: 420px; }
+  .dest-card-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform .6s ease;
+  }
+  .dest-card:hover .dest-card-img { transform: scale(1.05); }
+  .dest-card-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(8,9,16,0.95) 0%, rgba(8,9,16,0.1) 60%);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 2rem;
+  }
+  .dest-card-tag {
+    display: inline-block;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--cyan); background: rgba(0,229,255,0.1);
+    border: 1px solid rgba(0,229,255,0.3);
+    padding: 0.3rem 0.8rem; border-radius: 100px;
+    margin-bottom: 0.8rem; width: fit-content;
+  }
+  .dest-card-name {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 800; font-size: 1.6rem;
+    letter-spacing: -0.02em; margin-bottom: 0.4rem;
+  }
+  .dest-card-sub {
+    color: var(--muted); font-size: 0.85rem;
+    margin-bottom: 1.2rem;
+  }
+  .dest-card-expand {
+    display: flex; align-items: center; gap: 0.5rem;
+    color: var(--cyan); font-size: 0.8rem; font-weight: 600;
+    font-family: 'Syne', sans-serif;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity .3s, transform .3s;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .dest-card:hover .dest-card-expand { opacity: 1; transform: translateY(0); }
+  .dest-price {
+    position: absolute; top: 1.5rem; right: 1.5rem;
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700; font-size: 1rem;
+    color: var(--orange);
+    background: rgba(8,9,16,0.8);
+    padding: 0.4rem 0.8rem; border-radius: 8px;
+    backdrop-filter: blur(10px);
+  }
+
+  /* gradient placeholder backgrounds for destinations */
+  .dest-bg-1 { background: linear-gradient(135deg, #1a0a2e, #16213e, #0f3460, #533483); }
+  .dest-bg-2 { background: linear-gradient(135deg, #0d2137, #1a3a4a, #2d6a4f, #40916c); }
+  .dest-bg-3 { background: linear-gradient(135deg, #2d1b69, #11998e, #38ef7d); }
+  .dest-bg-4 { background: linear-gradient(135deg, #1a1a2e, #16213e, #e94560); }
+  .dest-bg-5 { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); }
+  .dest-card-art {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8rem;
+    opacity: 0.6;
+  }
+
+  /* ── TESTIMONIALS ── */
+  #testimonials { background: var(--bg2); }
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    max-width: 1400px; margin: 4rem auto 0;
+  }
+  @media (max-width: 768px) { .testimonials-grid { grid-template-columns: 1fr; } }
+  .testimonial-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px;
+    padding: 2rem;
+    position: relative; overflow: hidden;
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: border-color .3s;
+  }
+  .testimonial-card:hover { border-color: rgba(255,0,127,0.3); }
+  .testimonial-card::before {
+    content: '"';
+    position: absolute; top: 1rem; right: 1.5rem;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 5rem; font-weight: 900;
+    color: rgba(255,0,127,0.1);
+    line-height: 1;
+  }
+  .testimonial-stars {
+    color: var(--gold); font-size: 0.9rem; margin-bottom: 1rem;
+    letter-spacing: 0.1em;
+  }
+  .testimonial-text {
+    font-size: 0.95rem; line-height: 1.7;
+    color: rgba(240,244,255,0.8);
+    margin-bottom: 1.5rem;
+  }
+  .testimonial-author {
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .testimonial-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan), var(--magenta));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1.1rem; color: var(--bg);
+    font-family: 'Unbounded', sans-serif;
+    flex-shrink: 0;
+  }
+  .testimonial-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; }
+  .testimonial-loc { font-size: 0.8rem; color: var(--muted); }
+
+  /* ── 3D GLOBE SECTION ── */
+  #globe-section {
+    position: relative;
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    overflow: hidden;
+    padding: 6rem 3rem;
+  }
+  #globe-section::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(0,229,255,0.05) 0%, transparent 60%);
+  }
+  #threejs-canvas {
+    position: absolute; inset: 0; z-index: 0;
+  }
+  .globe-content {
+    position: relative; z-index: 10;
+    max-width: 600px;
+  }
+  .globe-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--magenta);
+    border: 1px solid rgba(255,0,127,0.3);
+    padding: 0.4rem 1.2rem; border-radius: 100px;
+    margin-bottom: 2rem;
+  }
+  .globe-title {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    line-height: 1.0; letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+  }
+  .globe-desc {
+    color: var(--muted); line-height: 1.7; font-size: 1rem;
+    margin-bottom: 2rem; max-width: 480px;
+  }
+  .globe-drag-hint {
+    display: inline-flex; align-items: center; gap: 0.7rem;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--cyan);
+    opacity: 0.7;
+  }
+  .drag-icon {
+    width: 32px; height: 32px;
+    border: 1.5px solid var(--cyan);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    animation: rotateSlow 4s linear infinite;
+  }
+  @keyframes rotateSlow {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Stats strip */
+  .stats-strip {
+    position: relative; z-index: 10;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 2rem; margin-top: 4rem;
+    max-width: 900px;
+  }
+  @media (max-width: 768px) { .stats-strip { grid-template-columns: repeat(2,1fr); } }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900; font-size: 2.2rem;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--cyan), var(--magenta));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-label {
+    font-size: 0.78rem; color: var(--muted);
+    font-family: 'Syne', sans-serif; letter-spacing: 0.1em;
+    text-transform: uppercase; margin-top: 0.3rem;
+  }
+
+  /* ── CONTACT SECTION ── */
+  #contact {
+    position: relative; overflow: hidden;
+    text-align: center; padding: 10rem 3rem;
+    background: var(--bg);
+  }
+  #contact::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 30%, rgba(255,0,127,0.08) 0%, transparent 60%);
+  }
+  .contact-tag {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--magenta); margin-bottom: 2rem; display: block;
+  }
+  .contact-headline {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900;
+    font-size: clamp(1.2rem, 3vw, 2rem);
+    letter-spacing: -0.02em;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+  .big-phone {
+    display: block;
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.5rem, 7vw, 6rem);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    text-decoration: none;
+    background: linear-gradient(135deg, var(--cyan) 0%, var(--white) 40%, var(--magenta) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200%;
+    animation: gradShift 4s ease infinite;
+    margin-bottom: 3rem;
+    transition: transform .2s;
+    position: relative; z-index: 1;
+  }
+  .big-phone:hover { transform: scale(1.02); }
+  @keyframes gradShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .trust-badges {
+    display: flex; justify-content: center; flex-wrap: wrap;
+    gap: 1rem; margin-top: 3rem;
+  }
+  .trust-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem; font-weight: 600;
+    color: rgba(240,244,255,0.7);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 0.6rem 1.4rem; border-radius: 100px;
+  }
+
+  /* glow orbs */
+  .orb {
+    position: absolute; border-radius: 50%;
+    filter: blur(80px); pointer-events: none;
+    will-change: transform;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--bg2);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 3rem;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 1.5rem;
+  }
+  .footer-logo {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900; font-size: 1.1rem;
+    background: linear-gradient(135deg, var(--cyan), var(--magenta));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .footer-copy {
+    font-size: 0.8rem; color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+  }
+  .social-icons { display: flex; gap: 1rem; }
+  .social-icon {
+    width: 38px; height: 38px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    transition: border-color .2s, background .2s, transform .2s;
+    color: var(--muted); text-decoration: none;
+  }
+  .social-icon:hover {
+    border-color: var(--cyan);
+    background: rgba(0,229,255,0.08);
+    color: var(--cyan);
+    transform: translateY(-2px);
+  }
+
+  /* ── NOISE OVERLAY ── */
+  .noise-overlay {
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 9990;
+  }
+
+  /* ── HORIZONTAL MARQUEE ── */
+  .marquee-wrap {
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--cyan), var(--magenta));
+    padding: 1rem 0;
+  }
+  .marquee-inner {
+    display: flex; width: max-content;
+    animation: marqueeMove 20s linear infinite;
+  }
+  .marquee-item {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700; font-size: 0.85rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--bg);
+    white-space: nowrap; padding: 0 2.5rem;
+    display: flex; align-items: center; gap: 1.5rem;
+  }
+  .marquee-item::after { content: '✦'; opacity: 0.5; }
+  @keyframes marqueeMove {
+    to { transform: translateX(-50%); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1024px) {
+    .bento-card.wide { grid-column: span 12; }
+    .bento-card.tall { grid-column: span 12; }
+    .bento-card.half { grid-column: span 6; }
+    .bento-card.third { grid-column: span 12; }
+  }
+  @media (max-width: 768px) {
+    section { padding: 5rem 1.5rem; }
+    nav { padding: 1.2rem 1.5rem; }
+    .testimonials-grid { grid-template-columns: 1fr; }
+    .bento-card.half { grid-column: span 12; }
+    footer { flex-direction: column; text-align: center; }
+    #cursor, #cursor-ring { display: none; }
+    body { cursor: auto; }
+    .globe-content { max-width: 100%; }
+    .stats-strip { max-width: 100%; }
+  }
+
+  /* Loading screen */
+  #loader {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    z-index: 99999;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2rem;
+  }
+  .loader-logo {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900; font-size: 1.8rem;
+    background: linear-gradient(135deg, var(--cyan), var(--magenta));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .loader-bar-wrap {
+    width: 200px; height: 2px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 100px; overflow: hidden;
+  }
+  .loader-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cyan), var(--magenta));
+    width: 0%;
+    border-radius: 100px;
+    animation: loaderFill 1.5s cubic-bezier(0.76,0,0.24,1) forwards;
+  }
+  @keyframes loaderFill { to { width: 100%; } }
+</style>
+
+<script>
+  tailwind.config = {
+    theme: { extend: {} }
+  }
+</script>
+</head>
+
+<body>
+
+<!-- Loader -->
+<div id="loader">
+  <div class="loader-logo">SKYWAYS</div>
+  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+</div>
+
+<!-- Noise overlay -->
+<div class="noise-overlay"></div>
+
+<!-- Custom cursor -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- ── NAV ── -->
+<nav id="navbar">
+  <div class="logo">SKYWAYS ✦</div>
+  <a href="tel:+442012345678" class="nav-cta">📞 Call Now</a>
+</nav>
+
+<!-- ── HERO ── -->
+<section id="hero">
+  <canvas id="hero-canvas-bg"></canvas>
+
+  <div class="hero-content">
+    <div class="hero-tag" id="hero-tag">✈ Premium Air Travel</div>
+
+    <h1 class="hero-headline" id="hero-headline">
+      Your Next<br>
+      <span class="grad" id="headline-grad">Journey</span><br>
+      Begins Now
+    </h1>
+
+    <div class="rotating-text-wrap" id="rotating-wrap">
+      <div class="rotating-text" id="rotating-text">Fly in unmatched comfort and style</div>
+    </div>
+
+    <a href="tel:+442012345678" class="phone-cta" id="hero-cta">
+      <div class="pulse-ring">
+        <div class="phone-icon">📞</div>
+      </div>
+      <span>+44 (0) 20 1234 5678</span>
+    </a>
+  </div>
+
+  <div class="scroll-hint" id="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ── MARQUEE ── -->
+<div class="marquee-wrap">
+  <div class="marquee-inner">
+    <div class="marquee-item">Premium Flights</div>
+    <div class="marquee-item">24/7 Support</div>
+    <div class="marquee-item">Best Price Guarantee</div>
+    <div class="marquee-item">Global Destinations</div>
+    <div class="marquee-item">Luxury Cabins</div>
+    <div class="marquee-item">Exclusive Deals</div>
+    <div class="marquee-item">Premium Flights</div>
+    <div class="marquee-item">24/7 Support</div>
+    <div class="marquee-item">Best Price Guarantee</div>
+    <div class="marquee-item">Global Destinations</div>
+    <div class="marquee-item">Luxury Cabins</div>
+    <div class="marquee-item">Exclusive Deals</div>
+  </div>
+</div>
+
+<!-- ── BENEFITS / BENTO ── -->
+<section id="benefits">
+  <div style="max-width:1400px; margin:0 auto;">
+    <span class="section-label" data-reveal>Why Book With Us</span>
+    <h2 class="section-title" data-reveal>We Redefine<br><span style="color:var(--cyan)">Air Travel</span></h2>
+  </div>
+
+  <div class="bento-grid" style="margin-top:3rem;">
+    <div class="bento-card wide" data-reveal data-delay="0">
+      <span class="bento-icon">🌍</span>
+      <h3>Global Network of Destinations</h3>
+      <p>Access over 500 destinations across 120 countries. From hidden tropical paradises to buzzing world capitals — we get you there, first class all the way.</p>
+      <div class="bento-number">01</div>
+      <div class="bento-accent"></div>
+    </div>
+
+    <div class="bento-card tall" data-reveal data-delay="0.1"
+      style="background: linear-gradient(135deg, rgba(0,229,255,0.05), rgba(255,0,127,0.05)); display:flex; flex-direction:column; justify-content:flex-end;">
+      <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:7rem; opacity:0.15;">✈</div>
+      <span class="bento-icon">💺</span>
+      <h3>Luxury Cabin Experience</h3>
+      <p>Every seat is curated for maximum comfort. Premium meals, lie-flat beds, and bespoke amenity kits.</p>
+      <div class="bento-number">02</div>
+    </div>
+
+    <div class="bento-card half" data-reveal data-delay="0.15">
+      <span class="bento-icon">⚡</span>
+      <h3>Instant Booking Confirmed</h3>
+      <p>Call us and your booking is confirmed within minutes. Real humans, real efficiency.</p>
+      <div class="bento-number">03</div>
+    </div>
+
+    <div class="bento-card half" data-reveal data-delay="0.2">
+      <span class="bento-icon">🔒</span>
+      <h3>Price Lock Guarantee</h3>
+      <p>Found it cheaper? We'll match it — and add exclusive perks on top.</p>
+      <div class="bento-number">04</div>
+    </div>
+
+    <div class="bento-card half" data-reveal data-delay="0.25">
+      <span class="bento-icon">🕐</span>
+      <h3>24/7 Concierge</h3>
+      <p>Our dedicated travel experts are available around the clock, every day of the year.</p>
+      <div class="bento-number">05</div>
+    </div>
+
+    <div class="bento-card third" data-reveal data-delay="0.3"
+      style="background: linear-gradient(135deg, rgba(255,153,0,0.05), rgba(255,0,127,0.05));">
+      <span class="bento-icon">🏆</span>
+      <h3>Award-Winning Service — 14 Years Running</h3>
+      <p>Recognised by the Travel Industry Awards as the UK's top boutique flight booking service. Over 200,000 happy travellers and counting.</p>
+      <div class="bento-number">06</div>
+      <div style="position:absolute; bottom:0; right:0; width:250px; height:250px; background: radial-gradient(circle, rgba(255,153,0,0.08), transparent 70%); pointer-events:none;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── DESTINATIONS ── -->
+<section id="destinations">
+  <div class="destinations-header">
+    <div>
+      <span class="section-label" data-reveal>Hot Destinations</span>
+      <h2 class="section-title" data-reveal>Fly <span style="color:var(--magenta)">Anywhere</span></h2>
+    </div>
+    <div class="scroll-hint-horiz" data-reveal>
+      ←&nbsp; Drag to explore &nbsp;→
+    </div>
+  </div>
+
+  <div id="horiz-track" class="horiz-scroll-track">
+    <!-- Tokyo -->
+    <div class="dest-card">
+      <div class="dest-bg-1 dest-card-art">🗼</div>
+      <div class="dest-card-overlay">
+        <div class="dest-card-tag">Asia Pacific</div>
+        <div class="dest-card-name">Tokyo</div>
+        <div class="dest-card-sub">Japan · 11h 30m from London</div>
+        <div class="dest-card-expand">Call for Best Price →</div>
+      </div>
+      <div class="dest-price">from £649</div>
+    </div>
+
+    <!-- New York -->
+    <div class="dest-card">
+      <div class="dest-bg-4 dest-card-art">🗽</div>
+      <div class="dest-card-overlay">
+        <div class="dest-card-tag">North America</div>
+        <div class="dest-card-name">New York</div>
+        <div class="dest-card-sub">USA · 7h 15m from London</div>
+        <div class="dest-card-expand">Call for Best Price →</div>
+      </div>
+      <div class="dest-price">from £389</div>
+    </div>
+
+    <!-- Bali -->
+    <div class="dest-card">
+      <div class="dest-bg-2 dest-card-art">🌴</div>
+      <div class="dest-card-overlay">
+        <div class="dest-card-tag">South East Asia</div>
+        <div class="dest-card-name">Bali</div>
+        <div class="dest-card-sub">Indonesia · 14h 40m from London</div>
+        <div class="dest-card-expand">Call for Best Price →</div>
+      </div>
+      <div class="dest-price">from £729</div>
+    </div>
+
+    <!-- Dubai -->
+    <div class="dest-card">
+      <div class="dest-bg-5 dest-card-art">🌆</div>
+      <div class="dest-card-overlay">
+        <div class="dest-card-tag">Middle East</div>
+        <div class="dest-card-name">Dubai</div>
+        <div class="dest-card-sub">UAE · 7h from London</div>
+        <div class="dest-card-expand">Call for Best Price →</div>
+      </div>
+      <div class="dest-price">from £299</div>
+    </div>
+
+    <!-- Maldives -->
+    <div class="dest-card">
+      <div class="dest-bg-3 dest-card-art">🏝</div>
+      <div class="dest-card-overlay">
+        <div class="dest-card-tag">Indian Ocean</div>
+        <div class="dest-card-name">Maldives</div>
+        <div class="dest-card-sub">Maldives · 10h 30m from London</div>
+        <div class="dest-card-expand">Call for Best Price →</div>
+      </div>
+      <div class="dest-price">from £849</div>
+    </div>
+
+    <!-- Sydney -->
+    <div class="dest-card">
+      <div class="dest-bg-1 dest-card-art">🦘</div>
+      <div class="dest-card-overlay">
+        <div class="dest-card-tag">Oceania</div>
+        <div class="dest-card-name">Sydney</div>
+        <div class="dest-card-sub">Australia · 21h from London</div>
+        <div class="dest-card-expand">Call for Best Price →</div>
+      </div>
+      <div class="dest-price">from £899</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIALS ── -->
+<section id="testimonials">
+  <div style="max-width:1400px; margin:0 auto;">
+    <span class="section-label" data-reveal>Real Travellers</span>
+    <h2 class="section-title" data-reveal>Words From<br><span style="color:var(--gold)">Our Flyers</span></h2>
+
+    <div class="testimonials-grid">
+      <div class="testimonial-card" data-reveal data-delay="0">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Called them at midnight and got my flights sorted in under 10 minutes. Honestly the best travel experience I've ever had. Business class to Singapore for less than I expected!"</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">JT</div>
+          <div>
+            <div class="testimonial-name">James T.</div>
+            <div class="testimonial-loc">London, UK</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card" data-reveal data-delay="0.1">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"SkyWays found me a first-class upgrade at the last minute. I flew to Tokyo in absolute luxury. Their team is incredibly professional and warm. Will never book anywhere else."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,var(--orange),var(--magenta));">SK</div>
+          <div>
+            <div class="testimonial-name">Sarah K.</div>
+            <div class="testimonial-loc">Manchester, UK</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card" data-reveal data-delay="0.2">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"I was travelling with three kids to Bali. The team planned every detail — seats, meals, airport assistance. They're miracle workers. 100% recommend."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,var(--cyan),#0044aa);">AM</div>
+          <div>
+            <div class="testimonial-name">Angela M.</div>
+            <div class="testimonial-loc">Edinburgh, UK</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card" data-reveal data-delay="0.1">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Price matched my quote from another agency and threw in airport lounge access. That's the SkyWays difference — real value, real care, real humans."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#44aa00,var(--cyan));">RB</div>
+          <div>
+            <div class="testimonial-name">Robert B.</div>
+            <div class="testimonial-loc">Birmingham, UK</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card" data-reveal data-delay="0.2">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Booked our honeymoon flights to the Maldives. The team added a complimentary upgrade as a wedding gift. I nearly cried. Absolute class act."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,var(--magenta),var(--orange));">LP</div>
+          <div>
+            <div class="testimonial-name">Laura P.</div>
+            <div class="testimonial-loc">Leeds, UK</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card" data-reveal data-delay="0.3">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"For business travel, SkyWays is unbeatable. Flexible changes, no stress, always a perfect seat. My entire company uses them now. Non-negotiable."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#6600cc,var(--cyan));">DW</div>
+          <div>
+            <div class="testimonial-name">David W.</div>
+            <div class="testimonial-loc">Bristol, UK</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── THREE.JS GLOBE SECTION ── -->
+<section id="globe-section">
+  <canvas id="threejs-canvas"></canvas>
+
+  <div class="globe-content" data-reveal>
+    <div class="globe-badge">🌐 Live Global Network</div>
+    <h2 class="globe-title">We Connect<br><span style="color:var(--cyan)">The World</span><br>For You</h2>
+    <p class="globe-desc">500+ routes. 120 countries. One phone call. Our live global network ensures you're never more than a conversation away from your next adventure.</p>
+    <div class="globe-drag-hint">
+      <div class="drag-icon">↻</div>
+      Click & drag to rotate globe
+    </div>
+  </div>
+
+  <div class="stats-strip" data-reveal>
+    <div class="stat-item">
+      <div class="stat-num" data-count="500">0</div>
+      <div class="stat-label">Destinations</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" data-count="200">0</div>
+      <div class="stat-label">K+ Happy Flyers</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" data-count="14">0</div>
+      <div class="stat-label">Years Experience</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" data-count="99">0</div>
+      <div class="stat-label">% Satisfaction</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CONTACT SECTION ── -->
+<section id="contact">
+  <!-- Orbs -->
+  <div class="orb" style="width:600px;height:600px;background:radial-gradient(circle,rgba(255,0,127,0.12),transparent 70%);top:-200px;left:50%;transform:translateX(-50%);"></div>
+  <div class="orb" style="width:300px;height:300px;background:radial-gradient(circle,rgba(0,229,255,0.1),transparent 70%);bottom:0;left:10%;"></div>
+
+  <div style="position:relative;z-index:1;">
+    <span class="contact-tag" data-reveal>Ready To Fly?</span>
+    <div class="contact-headline" data-reveal>One Call Is All It Takes</div>
+    <a href="tel:+442012345678" class="big-phone" id="big-phone" data-reveal>
+      +44 (0) 20 1234 5678
+    </a>
+
+    <div data-reveal>
+      <a href="tel:+442012345678" class="phone-cta" style="margin:0 auto; display:inline-flex; font-size:1.1rem; padding: 1.2rem 3rem;">
+        <div class="pulse-ring"><div class="phone-icon">📞</div></div>
+        <span>Tap to Call Now</span>
+      </a>
+    </div>
+
+    <div class="trust-badges" data-reveal>
+      <div class="trust-badge">📞 Available 24/7</div>
+      <div class="trust-badge">🏆 Award Winning</div>
+      <div class="trust-badge">💰 Best Price Guarantee</div>
+      <div class="trust-badge">✅ 200,000+ Happy Flyers</div>
+      <div class="trust-badge">🔒 Secure & Trusted</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-logo">SKYWAYS ✦</div>
+  <div class="footer-copy">© 2025 SkyWays Travel Ltd. All rights reserved. ATOL Protected.</div>
+  <div class="social-icons">
+    <a href="#" class="social-icon" title="Facebook">f</a>
+    <a href="#" class="social-icon" title="Instagram" style="font-style:italic;">ig</a>
+    <a href="#" class="social-icon" title="Twitter/X">𝕏</a>
+    <a href="#" class="social-icon" title="LinkedIn">in</a>
+  </div>
+</footer>
+
+<!-- ════════════════════════════════════
+     SCRIPTS
+════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ── LENIS SMOOTH SCROLL ──
+const lenis = new Lenis({
+  duration: 1.4,
+  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+  smooth: true,
+  mouseMultiplier: 0.8,
+});
+function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+requestAnimationFrame(raf);
+
+// Sync GSAP ScrollTrigger with Lenis
+lenis.on('scroll', ScrollTrigger.update);
+gsap.ticker.add((time) => { lenis.raf(time * 1000); });
+gsap.ticker.lagSmoothing(0);
+
+// ── GSAP PLUGINS ──
+gsap.registerPlugin(ScrollTrigger, TextPlugin);
+
+// ── CUSTOM CURSOR ──
+const cursor = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursor-ring');
+let mouseX = 0, mouseY = 0;
+let ringX = 0, ringY = 0;
+
+document.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX; mouseY = e.clientY;
+  gsap.to(cursor, { x: mouseX, y: mouseY, duration: 0.1, ease: 'power2.out' });
+});
+
+(function ringLoop() {
+  ringX += (mouseX - ringX) * 0.1;
+  ringY += (mouseY - ringY) * 0.1;
+  gsap.set(cursorRing, { x: ringX, y: ringY });
+  requestAnimationFrame(ringLoop);
+})();
+
+document.querySelectorAll('a, button, .dest-card, .bento-card, .testimonial-card').forEach(el => {
+  el.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
+  el.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
+});
+
+// ── NAVBAR SCROLL ──
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('navbar');
+  if (window.scrollY > 80) nav.classList.add('scrolled');
+  else nav.classList.remove('scrolled');
+});
+
+// ── HERO BACKGROUND CANVAS ──
+(function initHeroBg() {
+  const canvas = document.getElementById('hero-canvas-bg');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const particles = [];
+  const N = 120;
+
+  for (let i = 0; i < N; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.5 + 0.3,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      alpha: Math.random() * 0.6 + 0.1,
+      hue: Math.random() > 0.5 ? 190 : 310,
+    });
+  }
+
+  let t = 0;
+  function drawHeroBg() {
+    ctx.fillStyle = 'rgba(8,9,16,0.15)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    t += 0.005;
+
+    // Nebula gradients
+    const grad1 = ctx.createRadialGradient(
+      canvas.width * (0.3 + Math.sin(t * 0.7) * 0.15),
+      canvas.height * (0.4 + Math.cos(t * 0.5) * 0.1),
+      0,
+      canvas.width * 0.3, canvas.height * 0.4, canvas.width * 0.5
+    );
+    grad1.addColorStop(0, 'rgba(0,100,200,0.06)');
+    grad1.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad1; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const grad2 = ctx.createRadialGradient(
+      canvas.width * (0.7 + Math.cos(t * 0.6) * 0.1),
+      canvas.height * (0.6 + Math.sin(t * 0.8) * 0.1),
+      0,
+      canvas.width * 0.7, canvas.height * 0.6, canvas.width * 0.4
+    );
+    grad2.addColorStop(0, 'rgba(180,0,100,0.05)');
+    grad2.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad2; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Particles
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${p.hue}, 100%, 70%, ${p.alpha})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(drawHeroBg);
+  }
+  drawHeroBg();
+
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+})();
+
+// ── HERO PARALLAX ──
+let heroParallaxX = 0, heroParallaxY = 0;
+document.addEventListener('mousemove', (e) => {
+  const xPct = (e.clientX / window.innerWidth - 0.5);
+  const yPct = (e.clientY / window.innerHeight - 0.5);
+  heroParallaxX += (xPct * 30 - heroParallaxX) * 0.06;
+  heroParallaxY += (yPct * 20 - heroParallaxY) * 0.06;
+  const content = document.querySelector('.hero-content');
+  if (content) gsap.set(content, { x: heroParallaxX, y: heroParallaxY });
+});
+
+// ── LOADER & HERO ENTRANCE ──
+window.addEventListener('load', () => {
+  const loader = document.getElementById('loader');
+  setTimeout(() => {
+    gsap.to(loader, {
+      opacity: 0, duration: 0.6, ease: 'power2.out',
+      onComplete: () => { loader.style.display = 'none'; }
+    });
+
+    // Hero animate in
+    const tl = gsap.timeline({ delay: 0.3 });
+    tl.to('#hero-tag', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', from: { y: 30 } })
+      .fromTo('#hero-headline', { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }, '-=0.4')
+      .to('#rotating-wrap', { opacity: 1, duration: 0.6, ease: 'power2.out' }, '-=0.5')
+      .fromTo('#hero-cta', { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.8, ease: 'back.out(1.4)' }, '-=0.4')
+      .to('#scroll-hint', { opacity: 1, duration: 0.6 }, '-=0.2');
+
+    // Headline gradient animation
+    gsap.to('#headline-grad', {
+      backgroundPosition: '200% center',
+      duration: 4, repeat: -1, ease: 'none',
+      backgroundSize: '200%',
+    });
+
+  }, 1600);
+});
+
+// ── ROTATING TEXT ──
+const rotatingTexts = [
+  'Fly in unmatched comfort and style',
+  'Over 500 destinations worldwide',
+  'Call us for exclusive deals 24/7',
+  'Your personal travel concierge',
+  'Best prices. Guaranteed.',
+];
+let rtIdx = 0;
+const rtEl = document.getElementById('rotating-text');
+function rotateText() {
+  gsap.to(rtEl, {
+    opacity: 0, y: -20, duration: 0.4, ease: 'power2.in',
+    onComplete: () => {
+      rtIdx = (rtIdx + 1) % rotatingTexts.length;
+      rtEl.textContent = rotatingTexts[rtIdx];
+      gsap.fromTo(rtEl, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' });
+    }
+  });
+}
+setInterval(rotateText, 3000);
+
+// ── SCROLL ANIMATIONS ──
+document.querySelectorAll('[data-reveal]').forEach((el, i) => {
+  const delay = parseFloat(el.getAttribute('data-delay') || 0);
+  gsap.fromTo(el,
+    { opacity: 0, y: 50, scale: 0.97 },
+    {
+      opacity: 1, y: 0, scale: 1,
+      duration: 0.9, delay,
+      ease: 'power3.out',
+      scrollTrigger: {
+        trigger: el,
+        start: 'top 85%',
+        toggleActions: 'play none none none',
+      }
+    }
+  );
+});
+
+// Bento cards stagger
+gsap.fromTo('.bento-card',
+  { opacity: 0, y: 60, scale: 0.96 },
+  {
+    opacity: 1, y: 0, scale: 1,
+    duration: 0.8, stagger: 0.08,
+    ease: 'power3.out',
+    scrollTrigger: { trigger: '#benefits', start: 'top 70%' }
+  }
+);
+
+// Testimonial cards stagger
+gsap.fromTo('.testimonial-card',
+  { opacity: 0, y: 40 },
+  {
+    opacity: 1, y: 0,
+    duration: 0.7, stagger: 0.1,
+    ease: 'power2.out',
+    scrollTrigger: { trigger: '#testimonials', start: 'top 75%' }
+  }
+);
+
+// Counter animation
+document.querySelectorAll('[data-count]').forEach(el => {
+  const target = parseInt(el.getAttribute('data-count'));
+  ScrollTrigger.create({
+    trigger: el,
+    start: 'top 80%',
+    once: true,
+    onEnter: () => {
+      gsap.to({ val: 0 }, {
+        val: target, duration: 2, ease: 'power2.out',
+        onUpdate: function() { el.textContent = Math.round(this.targets()[0].val) + (target >= 99 ? '%' : '+'); }
+      });
+    }
+  });
+});
+
+// Big phone wiggle on scroll into view
+ScrollTrigger.create({
+  trigger: '#big-phone',
+  start: 'top 80%',
+  once: true,
+  onEnter: () => {
+    gsap.fromTo('#big-phone',
+      { scale: 0.7, opacity: 0, y: 40 },
+      { scale: 1, opacity: 1, y: 0, duration: 1.2, ease: 'elastic.out(1, 0.5)' }
+    );
+  }
+});
+
+// ── HORIZONTAL DRAG SCROLL ──
+(function initHorizScroll() {
+  const track = document.getElementById('horiz-track');
+  let isDragging = false, startX, scrollLeft;
+
+  track.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    track.style.cursor = 'grabbing';
+    startX = e.pageX - track.offsetLeft;
+    scrollLeft = track.parentElement.scrollLeft;
+  });
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+    track.style.cursor = 'grab';
+  });
+  track.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - track.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    gsap.to(track, { x: walk - scrollLeft, duration: 0.3, ease: 'power2.out' });
+  });
+
+  // Wheel scroll
+  const destSection = document.getElementById('destinations');
+  let trackX = 0;
+  const maxTrackX = 0;
+  const minTrackX = -(track.scrollWidth - window.innerWidth + 96);
+
+  destSection.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    trackX -= e.deltaY * 0.8;
+    trackX = Math.max(minTrackX, Math.min(maxTrackX, trackX));
+    gsap.to(track, { x: trackX, duration: 0.4, ease: 'power2.out' });
+  }, { passive: false });
+})();
+
+// ── THREE.JS GLOBE ──
+(function initGlobe() {
+  const canvas = document.getElementById('threejs-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.set(0, 0, 3.5);
+
+  // Ambient
+  scene.add(new THREE.AmbientLight(0x001133, 3));
+  const dirLight = new THREE.DirectionalLight(0x00e5ff, 4);
+  dirLight.position.set(5, 3, 5);
+  scene.add(dirLight);
+  const dirLight2 = new THREE.DirectionalLight(0xff007f, 2);
+  dirLight2.position.set(-5, -2, -3);
+  scene.add(dirLight2);
+
+  // Globe
+  const globeGeo = new THREE.SphereGeometry(1, 64, 64);
+  const globeMat = new THREE.MeshPhongMaterial({
+    color: 0x0a1628,
+    emissive: 0x001133,
+    specular: 0x00e5ff,
+    shininess: 40,
+    transparent: true,
+    opacity: 0.92,
+  });
+  const globe = new THREE.Mesh(globeGeo, globeMat);
+  scene.add(globe);
+
+  // Wireframe overlay
+  const wireMat = new THREE.MeshBasicMaterial({
+    color: 0x00e5ff, wireframe: true,
+    transparent: true, opacity: 0.06,
+  });
+  const wireGlobe = new THREE.Mesh(new THREE.SphereGeometry(1.001, 32, 32), wireMat);
+  scene.add(wireGlobe);
+
+  // Atmosphere glow
+  const atmGeo = new THREE.SphereGeometry(1.15, 64, 64);
+  const atmMat = new THREE.ShaderMaterial({
+    uniforms: {
+      c: { value: 0.3 },
+      p: { value: 4.5 },
+      glowColor: { value: new THREE.Color(0x00e5ff) },
+      viewVector: { value: camera.position }
+    },
+    vertexShader: `
+      uniform vec3 viewVector;
+      varying float intensity;
+      void main() {
+        vec3 vNormal = normalize(normalMatrix * normal);
+        vec3 vNormel = normalize(normalMatrix * viewVector);
+        intensity = pow(abs(dot(vNormal, vNormel)), 4.5);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 glowColor;
+      varying float intensity;
+      void main() {
+        gl_FragColor = vec4(glowColor * intensity * 0.6, intensity * 0.5);
+      }
+    `,
+    side: THREE.FrontSide,
+    blending: THREE.AdditiveBlending,
+    transparent: true,
+    depthWrite: false,
+  });
+  const atmosphere = new THREE.Mesh(atmGeo, atmMat);
+  scene.add(atmosphere);
+
+  // City dots
+  const cityCoords = [
+    [51.5, -0.1], [40.7, -74.0], [35.7, 139.7],
+    [-8.4, 115.2], [25.2, 55.3], [-33.9, 151.2],
+    [48.9, 2.4], [55.8, 37.6], [19.1, 72.9],
+    [1.3, 103.8], [-23.5, -46.6], [30.0, 31.2],
+    [41.0, 29.0], [37.6, 127.0], [22.3, 114.2],
+  ];
+  const dotGeo = new THREE.SphereGeometry(0.014, 8, 8);
+  const dotMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff });
+
+  function latLngToVec3(lat, lng, r = 1.01) {
+    const phi = (90 - lat) * (Math.PI / 180);
+    const theta = (lng + 180) * (Math.PI / 180);
+    return new THREE.Vector3(
+      -r * Math.sin(phi) * Math.cos(theta),
+      r * Math.cos(phi),
+      r * Math.sin(phi) * Math.sin(theta)
+    );
+  }
+
+  const cityMeshes = [];
+  cityCoords.forEach(([lat, lng]) => {
+    const dot = new THREE.Mesh(dotGeo, new THREE.MeshBasicMaterial({ color: 0x00e5ff }));
+    const pos = latLngToVec3(lat, lng);
+    dot.position.copy(pos);
+    globe.add(dot);
+    cityMeshes.push(dot);
+  });
+
+  // Arc connections between cities
+  function createArc(p1, p2) {
+    const points = [];
+    const n = 40;
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      const vec = new THREE.Vector3().lerpVectors(p1, p2, t);
+      const height = 1 + Math.sin(Math.PI * t) * 0.25;
+      vec.normalize().multiplyScalar(height);
+      points.push(vec);
+    }
+    const geo = new THREE.BufferGeometry().setFromPoints(points);
+    const mat = new THREE.LineBasicMaterial({
+      color: 0xff007f, transparent: true, opacity: 0.3,
+      blending: THREE.AdditiveBlending,
+    });
+    return new THREE.Line(geo, mat);
+  }
+
+  const arcPairs = [[0,1],[1,2],[2,3],[3,4],[4,5],[0,6],[6,7],[7,8],[8,9],[5,10],[0,14],[2,13]];
+  arcPairs.forEach(([a, b]) => {
+    const p1 = latLngToVec3(cityCoords[a][0], cityCoords[a][1]);
+    const p2 = latLngToVec3(cityCoords[b][0], cityCoords[b][1]);
+    globe.add(createArc(p1, p2));
+  });
+
+  // Stars background
+  const starGeo = new THREE.BufferGeometry();
+  const starVerts = [];
+  for (let i = 0; i < 3000; i++) {
+    starVerts.push((Math.random() - 0.5) * 100, (Math.random() - 0.5) * 100, (Math.random() - 0.5) * 100);
+  }
+  starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starVerts, 3));
+  const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.06, transparent: true, opacity: 0.5 }));
+  scene.add(stars);
+
+  // Mouse drag interaction
+  let isDragging = false, prevMX = 0, prevMY = 0;
+  let rotVX = 0, rotVY = 0;
+  let autoRotate = true;
+
+  canvas.addEventListener('mousedown', (e) => {
+    isDragging = true; autoRotate = false;
+    prevMX = e.clientX; prevMY = e.clientY;
+  });
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+    setTimeout(() => { autoRotate = true; }, 3000);
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const dx = e.clientX - prevMX;
+    const dy = e.clientY - prevMY;
+    rotVX += dy * 0.003;
+    rotVY += dx * 0.003;
+    prevMX = e.clientX; prevMY = e.clientY;
+  });
+
+  // Touch support
+  canvas.addEventListener('touchstart', (e) => {
+    isDragging = true; autoRotate = false;
+    prevMX = e.touches[0].clientX; prevMY = e.touches[0].clientY;
+  }, { passive: true });
+  canvas.addEventListener('touchend', () => { isDragging = false; setTimeout(() => autoRotate = true, 3000); });
+  canvas.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    const dx = e.touches[0].clientX - prevMX;
+    const dy = e.touches[0].clientY - prevMY;
+    rotVX += dy * 0.003;
+    rotVY += dx * 0.003;
+    prevMX = e.touches[0].clientX; prevMY = e.touches[0].clientY;
+  }, { passive: true });
+
+  // Pulsing city dots
+  let dotPulse = 0;
+
+  // Animate
+  function animateGlobe() {
+    requestAnimationFrame(animateGlobe);
+    dotPulse += 0.05;
+
+    if (autoRotate) {
+      globe.rotation.y += 0.002;
+      rotVX *= 0.95;
+      rotVY *= 0.95;
+    } else {
+      globe.rotation.x += rotVX;
+      globe.rotation.y += rotVY;
+      rotVX *= 0.92;
+      rotVY *= 0.92;
+    }
+
+    // Pulse dots
+    cityMeshes.forEach((dot, i) => {
+      const scale = 1 + Math.sin(dotPulse + i * 0.7) * 0.4;
+      dot.scale.setScalar(scale);
+    });
+
+    atmMat.uniforms.viewVector.value.copy(camera.position);
+    renderer.render(scene, camera);
+  }
+  animateGlobe();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+})();
+
+// ── TESTIMONIAL CARD 3D HOVER ──
+document.querySelectorAll('.testimonial-card').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    gsap.to(card, {
+      rotateX: -y * 12, rotateY: x * 12,
+      duration: 0.4, ease: 'power2.out',
+      transformPerspective: 800,
+    });
+  });
+  card.addEventListener('mouseleave', () => {
+    gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.6, ease: 'power2.out' });
+  });
+});
+
+// ── BENTO CARD PARALLAX ──
+document.querySelectorAll('.bento-card').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    gsap.to(card, {
+      rotateX: -y * 6, rotateY: x * 6,
+      duration: 0.5, ease: 'power2.out',
+      transformPerspective: 1000,
+    });
+  });
+  card.addEventListener('mouseleave', () => {
+    gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.5, ease: 'power2.out' });
+  });
+});
+
+// ── PHONE CTA MAGNETIC ──
+document.querySelectorAll('.phone-cta').forEach(btn => {
+  btn.addEventListener('mousemove', (e) => {
+    const rect = btn.getBoundingClientRect();
+    const x = (e.clientX - rect.left - rect.width / 2) * 0.25;
+    const y = (e.clientY - rect.top - rect.height / 2) * 0.25;
+    gsap.to(btn, { x, y, duration: 0.3, ease: 'power2.out' });
+  });
+  btn.addEventListener('mouseleave', () => {
+    gsap.to(btn, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1, 0.5)' });
+  });
+});
+
+// ── BIG PHONE KINETIC TYPOGRAPHY ──
+const bigPhone = document.getElementById('big-phone');
+if (bigPhone) {
+  bigPhone.addEventListener('mousemove', (e) => {
+    const rect = bigPhone.getBoundingClientRect();
+    const x = (e.clientX - rect.left - rect.width / 2) * 0.05;
+    const y = (e.clientY - rect.top - rect.height / 2) * 0.08;
+    gsap.to(bigPhone, { skewX: x, skewY: y * 0.3, duration: 0.3, ease: 'power2.out' });
+  });
+  bigPhone.addEventListener('mouseleave', () => {
+    gsap.to(bigPhone, { skewX: 0, skewY: 0, duration: 0.6, ease: 'elastic.out(1, 0.4)' });
+  });
+}
+
+// ── SCROLL-BASED SECTION BACKGROUND SHIFTS ──
+gsap.to('body', {
+  scrollTrigger: {
+    trigger: '#globe-section',
+    start: 'top bottom',
+    end: 'bottom top',
+    scrub: true,
+  },
+});
+
+// ── SECTION TITLE ANIMATIONS ──
+document.querySelectorAll('.section-title').forEach(title => {
+  gsap.fromTo(title,
+    { opacity: 0, y: 40 },
+    {
+      opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+      scrollTrigger: { trigger: title, start: 'top 85%' }
+    }
+  );
+});
+
+console.log('%cSKYWAYS ✦', 'font-family:monospace;font-size:24px;font-weight:900;background:linear-gradient(135deg,#00E5FF,#FF007F);-webkit-background-clip:text;color:transparent;padding:8px;');
+console.log('%cBuilt with passion. Fly with confidence.', 'font-family:monospace;color:#6B7A9A;');
+</script>
+
+</body>
+</html>
